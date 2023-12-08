@@ -1,3 +1,4 @@
+import sys
 import requests
 from geopy.distance import geodesic
 from dijkstra import dijkstra
@@ -46,7 +47,7 @@ def get_map_url(cities):
     return url
 
 
-def get_travel_route(path="city.txt"):
+def get_travel_route(path):
     cities_info = []
     city_location_mapping = {}
 
@@ -65,10 +66,10 @@ def get_travel_route(path="city.txt"):
     ordered_cities_info = [cities_info[i] for i in path_order]
 
     total_distance = sum(
-        distance_matrix[a][b] for a, b in zip(path_order, path_order[1:])
+        distance_matrix[i][j] for i, j in zip(path_order, path_order[1:])
     )
 
-    return (ordered_cities_info, total_distance)
+    return ordered_cities_info, total_distance
 
 
 def print_result(cities, distance):
@@ -80,15 +81,25 @@ def print_result(cities, distance):
     map_url = get_map_url(ordered_cities_info)
 
     table = Table(expand=True)
-    table.add_column("Travel Route", justify="center", style="bold cyan", no_wrap=True)
+    table.add_column("Travel Route", justify="center", style="bold cyan")
 
     table.add_row(f"[green]Total Distance: {str(distance)}km[/green]")
     table.add_row(f"[blue]{formatted_route}[/blue]")
-    table.add_row(f"[yellow][link={map_url}]Google Maps Route[/link][/yellow]")
+    table.add_row(
+        f"[yellow][link={map_url}]Google Maps Route: [/link][/yellow] {map_url}"
+    )
 
     console.print(table)
 
 
 if __name__ == "__main__":
-    ordered_cities_info, total_distance = get_travel_route(path="city.txt")
+    if len(sys.argv) == 2:
+        city_file_path = sys.argv[1]
+    elif len(sys.argv) == 1:
+        city_file_path = "city.txt"
+    else:
+        print("Usage: python3 main.py [city_file_path]")
+        sys.exit(1)
+
+    ordered_cities_info, total_distance = get_travel_route(path=city_file_path)
     print_result(ordered_cities_info, total_distance)
