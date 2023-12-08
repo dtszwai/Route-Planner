@@ -1,0 +1,6 @@
+Vancouver,British Columbia,CA
+Oklahoma City,Oklahoma,US
+Kansas City,Missouri,US
+Riverton,Utah,US
+Denver,Colorado,US
+New York,New York, US
