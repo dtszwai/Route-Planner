@@ -32,8 +32,6 @@ def get_distance_matrix(cities_location: dict[list]):
 
 
 def get_map_url(cities):
-    print(cities)
-
     url = "https://www.google.com/maps/dir/"
     for city in cities:
         city_name = city[0].replace(" ", "+")
@@ -60,14 +58,18 @@ if __name__ == "__main__":
 
     distance_matrix = get_distance_matrix(city_location_mapping)
 
-    order = dijkstra(distance_matrix)
-    ordered_cities_info = [cities_info[i] for i in order]
+    path_order = dijkstra(distance_matrix)
+    ordered_cities_info = [cities_info[i] for i in path_order]
 
     route = [city[0] for city in ordered_cities_info]
     formatted_route = " -> ".join(route)
+    total_distance = sum(
+        distance_matrix[a][b] for a, b in zip(path_order, path_order[1:])
+    )
 
     print("Travel Route: ")
     print(formatted_route)
+    print(f"Total Distance: {total_distance}km")
 
     map_url = get_map_url(ordered_cities_info)
     print(map_url)
