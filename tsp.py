@@ -1,12 +1,12 @@
 def tsp(matrix):
     n = len(matrix)
-    all_cities = set(range(1, n))
+    all_cities = set(range(n - 1))
 
     memo = {}
 
     def tsp_dp_helper(curr, visited):
         if not visited:
-            return matrix[curr][0]
+            return matrix[curr][n - 1]
 
         key = (curr, tuple(visited))
         if key in memo:
@@ -21,10 +21,10 @@ def tsp(matrix):
         memo[key] = min_cost
         return min_cost
 
-    optimal_cost = tsp_dp_helper(0, all_cities)
+    optimal_cost = tsp_dp_helper(n - 1, all_cities)
 
-    path = [0]
-    curr_city = 0
+    path = [n - 1]
+    curr_city = n - 1
     remaining_cities = all_cities.copy()
 
     for _ in range(n - 1):
@@ -33,6 +33,6 @@ def tsp(matrix):
         remaining_cities.remove(next_city)
         curr_city = next_city
 
-    optimal_distance = optimal_cost - matrix[path[-1]][0]
-
+    optimal_distance = optimal_cost - matrix[path[-1]][n - 1]
+    path.reverse()
     return path
