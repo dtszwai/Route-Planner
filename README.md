@@ -51,22 +51,22 @@ New York,New York, US
 To run the program, use the following command:
 
 ```bash
-streamlit run main.py [city_file_path] [method] (optional)
+streamlit run main.py [city_file_path] [data_source] (optional)
 ```
 
 For example:
 
 ```bash
-# Using Google Maps
+# Using Google Maps as a Data Source:
 streamlit run main.py city.txt google_maps
 
-# Using Coordinate
+# Using Coordinates to Calculate Distances:
 streamlit run main.py city.txt coordinate
 
-# By default, we use Google Maps.
-streamlit run main.py city.txt
+# Default case (city.txt and Google Maps)
+streamlit run main.py
 ```
 
-Replace [city_file_path] with the path to your customized city.txt file.
+If the `data_source` is set to `google_maps`, the program will use Google Maps data to calculate the distance between cities.
 
-Feel free to customize the program based on your specific implementation.
+If the `data_source` is set to `coordinate`, the program will calculate the distance between cities using coordinates.

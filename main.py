@@ -1,9 +1,8 @@
 import os
 import sys
-from dijkstra import dijkstra
-from dotenv import load_dotenv
-from tsp import tsp
 import streamlit as st
+from dotenv import load_dotenv
+from algorithm import dijkstra, dp
 from distance import (
     get_distance_matrix_by_google_maps,
     get_distance_matrix_by_coordinate,
@@ -26,17 +25,10 @@ def get_map_url(cities):
     return url
 
 
-def get_travel_route(path, method=GOOGLE_MAPS, algorithm=dijkstra):
-    cities_info = []
-
-    with open(path, "r") as file:
-        for line in file:
-            city, state, country = line.strip().split(",")
-            cities_info.append((city, state, country))
-
-    if method == GOOGLE_MAPS:
+def get_travel_route(cities_info, data_source=GOOGLE_MAPS, algorithm=dijkstra):
+    if data_source == GOOGLE_MAPS:
         distance_matrix = get_distance_matrix_by_google_maps(cities_info)
-    elif method == COORDINATE:
+    elif data_source == COORDINATE:
         distance_matrix = get_distance_matrix_by_coordinate(cities_info)
 
     path_order = algorithm(distance_matrix)
@@ -49,8 +41,8 @@ def get_travel_route(path, method=GOOGLE_MAPS, algorithm=dijkstra):
     return ordered_cities_info, total_distance
 
 
-def visualizer(cities, distance, title):
-    route = [f"`{city[0]}`" for city in cities]
+def visualizer(ordered_cities_info, distance, title):
+    route = [f"`{city[0]}`" for city in ordered_cities_info]
     formatted_route = " -> ".join(route)
 
     map_url = get_map_url(ordered_cities_info)
@@ -76,24 +68,47 @@ def visualizer(cities, distance, title):
     st.components.v1.html(embed_code, height=500)
 
 
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        city_file_path = sys.argv[1]
-        method = sys.argv[2] if len(sys.argv) > 2 else GOOGLE_MAPS
+def parse_command_line(arguments):
+    if len(arguments) > 1:
+        city_file_path = arguments[1]
+        method = arguments[2] if len(arguments) > 2 else GOOGLE_MAPS
     else:
-        print("Usage: streamlit main.py [city_file_path] [method]")
-        sys.exit(1)
+        city_file_path = "city.txt"
+        method = GOOGLE_MAPS
+    return city_file_path, method
+
+
+def read_cities_info(file_path):
+    return [tuple(line.strip().split(",")) for line in open(file_path, "r")]
+
+
+def run_and_visualize_algorithm(cities_info, data_source, algorithm, title):
+    ordered_cities_info, total_distance = get_travel_route(
+        cities_info=cities_info, data_source=data_source, algorithm=algorithm
+    )
+    visualizer(ordered_cities_info, total_distance, title=title)
+
+
+def main():
+    city_file_path, data_source = parse_command_line(sys.argv)
+    cities_info = read_cities_info(city_file_path)
 
     st.title(f"Shortest Travel Route Visualizer")
-    st.markdown(f"Calculating distances using `{method.capitalize()}`.")
+    st.markdown(f"Calculating distances using `{data_source.capitalize()}`.")
 
-    ordered_cities_info, total_distance = get_travel_route(
-        path=city_file_path, method=method, algorithm=dijkstra
+    run_and_visualize_algorithm(
+        cities_info=cities_info,
+        data_source=data_source,
+        algorithm=dijkstra,
+        title="Dijkstra's Algorithm",
+    )
+    run_and_visualize_algorithm(
+        cities_info=cities_info,
+        data_source=data_source,
+        algorithm=dp,
+        title="Dynamic Programming",
     )
 
-    visualizer(ordered_cities_info, total_distance, title="Dijkstra")
 
-    ordered_cities_info, total_distance = get_travel_route(
-        path=city_file_path, method=method, algorithm=tsp
-    )
-    visualizer(ordered_cities_info, total_distance, title="TSP")
+if __name__ == "__main__":
+    main()
