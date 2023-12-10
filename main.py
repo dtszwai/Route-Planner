@@ -1,39 +1,20 @@
+import os
 import sys
-import requests
-from geopy.distance import geodesic
 from dijkstra import dijkstra
+from dotenv import load_dotenv
 from tsp import tsp
 import streamlit as st
+from distance import (
+    get_distance_matrix_by_google_maps,
+    get_distance_matrix_by_coordinate,
+)
 
+GOOGLE_MAPS = "google_maps"
+COORDINATE = "coordinate"
 
-OPEN_WEATHER_MAP_API_KEY = ""
-GOOGLE_MAP_API_KEY = ""
+load_dotenv()
 
-
-def get_location(city="", state="", country="", limit=1):
-    url = f"http://api.openweathermap.org/geo/1.0/direct?q={city},{state},{country}&limit={limit}&appid={OPEN_WEATHER_MAP_API_KEY}"
-    response = requests.get(url)
-    response_json = response.json()
-    location = [response_json[0]["lat"], response_json[0]["lon"]]
-    return location
-
-
-def get_distance_matrix(cities_location: dict[list]):
-    cities = list(cities_location.keys())
-
-    distance_matrix = [[0] * len(cities) for _ in range(len(cities))]
-
-    for i in range(len(cities)):
-        for j in range(len(cities)):
-            if i == j:
-                distance_matrix[i][j] = 0
-            else:
-                city1_location = cities_location[cities[i]]
-                city2_location = cities_location[cities[j]]
-
-                distance_matrix[i][j] = int(geodesic(city1_location, city2_location).km)
-
-    return distance_matrix
+GOOGLE_MAP_API_KEY = os.getenv("GOOGLE_MAP_API_KEY")
 
 
 def get_map_url(cities):
@@ -45,20 +26,19 @@ def get_map_url(cities):
     return url
 
 
-def get_travel_route(path, algorithm=dijkstra):
+def get_travel_route(path, method=GOOGLE_MAPS, algorithm=dijkstra):
     cities_info = []
-    city_location_mapping = {}
 
     with open(path, "r") as file:
         for line in file:
             city, state, country = line.strip().split(",")
             cities_info.append((city, state, country))
 
-    for city in cities_info:
-        location = get_location(*city)
-        city_location_mapping[city] = location
+    if method == GOOGLE_MAPS:
+        distance_matrix = get_distance_matrix_by_google_maps(cities_info)
+    elif method == COORDINATE:
+        distance_matrix = get_distance_matrix_by_coordinate(cities_info)
 
-    distance_matrix = get_distance_matrix(city_location_mapping)
     path_order = algorithm(distance_matrix)
     ordered_cities_info = [cities_info[i] for i in path_order]
 
@@ -70,14 +50,17 @@ def get_travel_route(path, algorithm=dijkstra):
 
 
 def visualizer(cities, distance, title):
-    route = [city[0] for city in cities]
+    route = [f"`{city[0]}`" for city in cities]
     formatted_route = " -> ".join(route)
 
     map_url = get_map_url(ordered_cities_info)
 
     st.header(f"Travel Route ({title}):")
-    st.write(formatted_route)
-    st.write(f"Total Distance: {distance}")
+    st.write(
+        f"<span style='font-size:1.5em'>{formatted_route}</span>",
+        unsafe_allow_html=True,
+    )
+    st.write(f"Total Distance: {int(distance)} km")
 
     embed_code = f"""
         <iframe
@@ -94,23 +77,23 @@ def visualizer(cities, distance, title):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2:
+    if len(sys.argv) > 1:
         city_file_path = sys.argv[1]
-    elif len(sys.argv) == 1:
-        city_file_path = "city.txt"
+        method = sys.argv[2] if len(sys.argv) > 2 else GOOGLE_MAPS
     else:
-        print("Usage: streamlit main.py [city_file_path]")
+        print("Usage: streamlit main.py [city_file_path] [method]")
         sys.exit(1)
 
-    st.title("Shortest Travel Route Visualizer")
+    st.title(f"Shortest Travel Route Visualizer")
+    st.markdown(f"Calculating distances using `{method.capitalize()}`.")
 
     ordered_cities_info, total_distance = get_travel_route(
-        path=city_file_path, algorithm=dijkstra
+        path=city_file_path, method=method, algorithm=dijkstra
     )
 
     visualizer(ordered_cities_info, total_distance, title="Dijkstra")
 
     ordered_cities_info, total_distance = get_travel_route(
-        path=city_file_path, algorithm=tsp
+        path=city_file_path, method=method, algorithm=tsp
     )
     visualizer(ordered_cities_info, total_distance, title="TSP")
