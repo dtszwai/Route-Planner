@@ -4,6 +4,7 @@ from geopy.distance import geodesic
 from dijkstra import dijkstra
 from rich.console import Console
 from rich.table import Table
+from tsp import tsp
 
 
 API_KEY = ""
@@ -47,7 +48,7 @@ def get_map_url(cities):
     return url
 
 
-def get_travel_route(path):
+def get_travel_route(path, algorithm=dijkstra):
     cities_info = []
     city_location_mapping = {}
 
@@ -61,8 +62,7 @@ def get_travel_route(path):
         city_location_mapping[city] = location
 
     distance_matrix = get_distance_matrix(city_location_mapping)
-
-    path_order = dijkstra(distance_matrix)
+    path_order = algorithm(distance_matrix)
     ordered_cities_info = [cities_info[i] for i in path_order]
 
     total_distance = sum(
@@ -72,7 +72,7 @@ def get_travel_route(path):
     return ordered_cities_info, total_distance
 
 
-def print_result(cities, distance):
+def print_result(cities, distance, title):
     console = Console()
 
     route = [city[0] for city in cities]
@@ -81,7 +81,7 @@ def print_result(cities, distance):
     map_url = get_map_url(ordered_cities_info)
 
     table = Table(expand=True)
-    table.add_column("Travel Route", justify="center", style="bold cyan")
+    table.add_column(f"Travel Route ({title})", justify="center", style="bold cyan")
 
     table.add_row(f"[green]Total Distance: {str(distance)}km[/green]")
     table.add_row(f"[blue]{formatted_route}[/blue]")
@@ -101,5 +101,12 @@ if __name__ == "__main__":
         print("Usage: python3 main.py [city_file_path]")
         sys.exit(1)
 
-    ordered_cities_info, total_distance = get_travel_route(path=city_file_path)
-    print_result(ordered_cities_info, total_distance)
+    ordered_cities_info, total_distance = get_travel_route(
+        path=city_file_path, algorithm=dijkstra
+    )
+    print_result(ordered_cities_info, total_distance, title="Dijkstra")
+
+    ordered_cities_info, total_distance = get_travel_route(
+        path=city_file_path, algorithm=tsp
+    )
+    print_result(ordered_cities_info, total_distance, title="TSP")
