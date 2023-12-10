@@ -1,8 +1,6 @@
 Vancouver,British Columbia,CA
 Oklahoma City,Oklahoma,US
 Kansas City,Missouri,US
-Riverton,Utah,US
-Los Angeles,California,US
-Seattle,Washington,US
+Riverton,Wyoming,US
 Denver,Colorado,US
 New York,New York, US

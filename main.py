@@ -2,16 +2,16 @@ import sys
 import requests
 from geopy.distance import geodesic
 from dijkstra import dijkstra
-from rich.console import Console
-from rich.table import Table
 from tsp import tsp
+import streamlit as st
 
 
-API_KEY = ""
+OPEN_WEATHER_MAP_API_KEY = ""
+GOOGLE_MAP_API_KEY = ""
 
 
 def get_location(city="", state="", country="", limit=1):
-    url = f"http://api.openweathermap.org/geo/1.0/direct?q={city},{state},{country}&limit={limit}&appid={API_KEY}"
+    url = f"http://api.openweathermap.org/geo/1.0/direct?q={city},{state},{country}&limit={limit}&appid={OPEN_WEATHER_MAP_API_KEY}"
     response = requests.get(url)
     response_json = response.json()
     location = [response_json[0]["lat"], response_json[0]["lon"]]
@@ -37,14 +37,11 @@ def get_distance_matrix(cities_location: dict[list]):
 
 
 def get_map_url(cities):
-    url = "https://www.google.com/maps/dir/"
-    for city in cities:
-        city_name = city[0].replace(" ", "+")
-        state = city[1].replace(" ", "+")
-        country = city[2].replace(" ", "+")
+    city_info = [f"{city[0]}, {city[1]}, {city[2]}" for city in cities]
+    waypoints = "|".join(city_info[1:-1])
 
-        params = f"{city_name},{state},{country}/"
-        url += params
+    url = f"https://www.google.com/maps/embed/v1/directions?key={GOOGLE_MAP_API_KEY}&origin={city_info[0]}&destination={city_info[-1]}&waypoints={waypoints}&mode=driving"
+
     return url
 
 
@@ -72,24 +69,28 @@ def get_travel_route(path, algorithm=dijkstra):
     return ordered_cities_info, total_distance
 
 
-def print_result(cities, distance, title):
-    console = Console()
-
+def visualizer(cities, distance, title):
     route = [city[0] for city in cities]
     formatted_route = " -> ".join(route)
 
     map_url = get_map_url(ordered_cities_info)
 
-    table = Table(expand=True)
-    table.add_column(f"Travel Route ({title})", justify="center", style="bold cyan")
+    st.header(f"Travel Route ({title}):")
+    st.write(formatted_route)
+    st.write(f"Total Distance: {distance}")
 
-    table.add_row(f"[green]Total Distance: {str(distance)}km[/green]")
-    table.add_row(f"[blue]{formatted_route}[/blue]")
-    table.add_row(
-        f"[yellow][link={map_url}]Google Maps Route: [/link][/yellow] {map_url}"
-    )
+    embed_code = f"""
+        <iframe
+            width="600"
+            height="450"
+            style="border:0"
+            src="{map_url}"
+            allowfullscreen
+        >
+        </iframe>
+    """
 
-    console.print(table)
+    st.components.v1.html(embed_code, height=500)
 
 
 if __name__ == "__main__":
@@ -98,15 +99,18 @@ if __name__ == "__main__":
     elif len(sys.argv) == 1:
         city_file_path = "city.txt"
     else:
-        print("Usage: python3 main.py [city_file_path]")
+        print("Usage: streamlit main.py [city_file_path]")
         sys.exit(1)
+
+    st.title("Shortest Travel Route Visualizer")
 
     ordered_cities_info, total_distance = get_travel_route(
         path=city_file_path, algorithm=dijkstra
     )
-    print_result(ordered_cities_info, total_distance, title="Dijkstra")
+
+    visualizer(ordered_cities_info, total_distance, title="Dijkstra")
 
     ordered_cities_info, total_distance = get_travel_route(
         path=city_file_path, algorithm=tsp
     )
-    print_result(ordered_cities_info, total_distance, title="TSP")
+    visualizer(ordered_cities_info, total_distance, title="TSP")
