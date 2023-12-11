@@ -31,12 +31,8 @@ def get_travel_route(cities_info, data_source=GOOGLE_MAPS, algorithm=dijkstra):
     elif data_source == COORDINATE:
         distance_matrix = get_distance_matrix_by_coordinate(cities_info)
 
-    path_order = algorithm(distance_matrix)
+    path_order, total_distance = algorithm(distance_matrix)
     ordered_cities_info = [cities_info[i] for i in path_order]
-
-    total_distance = sum(
-        distance_matrix[i][j] for i, j in zip(path_order, path_order[1:])
-    )
 
     return ordered_cities_info, total_distance
 
@@ -52,7 +48,7 @@ def visualizer(ordered_cities_info, distance, title):
         f"<span style='font-size:1.5em'>{formatted_route}</span>",
         unsafe_allow_html=True,
     )
-    st.write(f"Total Distance: {int(distance)} km")
+    st.write(f"Total Distance: {round(distance)} km")
 
     embed_code = f"""
         <iframe

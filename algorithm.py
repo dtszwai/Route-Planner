@@ -1,30 +1,26 @@
 def dijkstra(matrix):
-    if matrix is None:
-        return None
+    num_nodes = len(matrix)
+    destination = num_nodes - 1
 
-    nodes = [i for i in range(1, len(matrix))]
+    nodes = set(range(1, destination)) # All waypoints are nodes
 
-    visited = [0]
-    distance = {0: 0}
-
+    total_distance = 0
     path = [0]
     curr_node = 0
 
     while nodes:
-        mid_distance = float("inf")
-        for v in visited:
-            for node in nodes:
-                new_distance = matrix[0][v] + matrix[v][node]
-                if new_distance < mid_distance:
-                    mid_distance = new_distance
-                    curr_node = node
-        distance[curr_node] = mid_distance
-        path.append(curr_node)
+        next_node, min_distance = min(
+            ((node, matrix[curr_node][node]) for node in nodes), key=lambda x: x[1]
+        )
+        total_distance += min_distance
+        curr_node = next_node
+        path.append(next_node)
+        nodes.remove(next_node)
 
-        visited.append(curr_node)
-        nodes.remove(curr_node)
+    path.append(destination)
+    total_distance += matrix[curr_node][destination]
 
-    return path
+    return path, total_distance
 
 
 def dp(matrix):
@@ -64,4 +60,4 @@ def dp(matrix):
 
     optimal_distance = optimal_cost - matrix[path[-1]][n - 1]
     path.reverse()
-    return path
+    return path, optimal_distance
