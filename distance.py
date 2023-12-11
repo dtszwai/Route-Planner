@@ -17,7 +17,7 @@ def get_distance_matrix_by_google_maps(cities):
         ]
     )
 
-    url = f"https://maps.googleapis.com/maps/api/distancematrix/json?destinations={formatted_cities}&origins={formatted_cities}&units=imperial&key= {GOOGLE_MAP_API_KEY}"
+    url = f"https://maps.googleapis.com/maps/api/distancematrix/json?destinations={formatted_cities}&origins={formatted_cities}&units=imperial&key={GOOGLE_MAP_API_KEY}"
 
     response = requests.get(url)
     response_json = response.json()

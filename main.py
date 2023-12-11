@@ -2,7 +2,7 @@ import os
 import sys
 import streamlit as st
 from dotenv import load_dotenv
-from algorithm import dijkstra, dp
+from algorithm import dijkstra
 from distance import (
     get_distance_matrix_by_google_maps,
     get_distance_matrix_by_coordinate,
@@ -25,13 +25,15 @@ def get_map_url(cities):
     return url
 
 
-def get_travel_route(cities_info, data_source=GOOGLE_MAPS, algorithm=dijkstra):
+def get_travel_route(
+    cities_info, data_source=GOOGLE_MAPS, algorithm=dijkstra, reverse=False
+):
     if data_source == GOOGLE_MAPS:
         distance_matrix = get_distance_matrix_by_google_maps(cities_info)
     elif data_source == COORDINATE:
         distance_matrix = get_distance_matrix_by_coordinate(cities_info)
 
-    path_order, total_distance = algorithm(distance_matrix)
+    path_order, total_distance = algorithm(distance_matrix, reverse)
     ordered_cities_info = [cities_info[i] for i in path_order]
 
     return ordered_cities_info, total_distance
@@ -78,9 +80,14 @@ def read_cities_info(file_path):
     return [tuple(line.strip().split(",")) for line in open(file_path, "r")]
 
 
-def run_and_visualize_algorithm(cities_info, data_source, algorithm, title):
+def run_and_visualize_algorithm(
+    cities_info, data_source, algorithm, title, reverse=False
+):
     ordered_cities_info, total_distance = get_travel_route(
-        cities_info=cities_info, data_source=data_source, algorithm=algorithm
+        cities_info=cities_info,
+        data_source=data_source,
+        algorithm=algorithm,
+        reverse=reverse,
     )
     visualizer(ordered_cities_info, total_distance, title=title)
 
@@ -101,8 +108,9 @@ def main():
     run_and_visualize_algorithm(
         cities_info=cities_info,
         data_source=data_source,
-        algorithm=dp,
-        title="Dynamic Programming",
+        algorithm=dijkstra,
+        reverse=True,
+        title="Dijkstra's Algorithm (Reverse)",
     )
 
 
