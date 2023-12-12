@@ -38,9 +38,7 @@ def get_map_url(cities):
     return url
 
 
-def get_travel_route(
-    cities, data_source=GOOGLE_MAPS, algorithm=dijkstra, reverse=False
-):
+def get_travel_route(cities, data_source=GOOGLE_MAPS, algorithm=dijkstra):
     """
     Calculate the travel route using the specified algorithm and data source.
 
@@ -49,7 +47,6 @@ def get_travel_route(
       ('City Name', 'State/Province', 'Country Code').
     - data_source (str): The data source for calculating distances, either 'google_maps' or 'coordinate'.
     - algorithm (function): The algorithm to use for finding the travel route.
-    - reverse (bool): If True, reverse the calculated route.
 
     Returns:
     tuple: A tuple containing two elements:
@@ -61,7 +58,7 @@ def get_travel_route(
     elif data_source == COORDINATE:
         distance_matrix = get_distance_matrix_by_coordinate(cities)
 
-    path_order, total_distance = algorithm(distance_matrix, reverse)
+    path_order, total_distance = algorithm(distance_matrix)
     ordered_cities = [cities[i] for i in path_order]
 
     return ordered_cities, total_distance
@@ -140,7 +137,7 @@ def read_cities_info(file_path):
     return [tuple(line.strip().split(",")) for line in open(file_path, "r")]
 
 
-def run_and_visualize_algorithm(cities, data_source, algorithm, title, reverse=False):
+def run_and_visualize_algorithm(cities, data_source, algorithm, title):
     """
     Run the algorithm, visualize the result, and display on Streamlit.
 
@@ -149,13 +146,11 @@ def run_and_visualize_algorithm(cities, data_source, algorithm, title, reverse=F
     - data_source (str): The data source for calculating distances, either 'google_maps' or 'coordinate'.
     - algorithm (function): The algorithm to use for finding the travel route.
     - title (str): The title for the visualization.
-    - reverse (bool): If True, reverse the calculated route.
     """
     ordered_cities, total_distance = get_travel_route(
         cities=cities,
         data_source=data_source,
         algorithm=algorithm,
-        reverse=reverse,
     )
     visualizer(ordered_cities, total_distance, title=title)
 
@@ -170,19 +165,12 @@ def main():
     st.title(f"Shortest Travel Route Visualizer")
     st.markdown(f"Calculating distances using `{data_source.capitalize()}`.")
 
-    # Run and visualize the algorithm with and without reverse order
+    # Run and visualize the algorithm
     run_and_visualize_algorithm(
         cities=cities,
         data_source=data_source,
         algorithm=dijkstra,
         title="Dijkstra's Algorithm",
-    )
-    run_and_visualize_algorithm(
-        cities=cities,
-        data_source=data_source,
-        algorithm=dijkstra,
-        reverse=True,
-        title="Dijkstra's Algorithm (Reverse)",
     )
 
 

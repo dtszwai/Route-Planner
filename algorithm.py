@@ -1,10 +1,9 @@
-def dijkstra(matrix, reverse=False):
+def dijkstra(matrix):
     """
     Find the shortest path using Dijkstra's algorithm on a given distance matrix.
 
     Parameters:
     - matrix (list): A 2D list representing the distance matrix between cities.
-    - reverse (bool): If True, find the shortest path from destination to start, then reverse the path.
 
     Returns:
     tuple: A tuple containing two elements:
@@ -15,15 +14,11 @@ def dijkstra(matrix, reverse=False):
     # Number of cities
     n = len(matrix)
 
-    # Define start and destination based on reverse flag
-    start, destination = (n - 1, 0) if reverse else (0, n - 1)
+    # Define start and destination
+    start, destination = 0, n - 1
 
     # Initialize remaining cities to visit
-    remaining_cities = (
-        list(range(start + 1, destination))
-        if not reverse
-        else list(range(destination + 1, start))
-    )
+    remaining_cities = list(range(start + 1, destination))
 
     # Initialize variables for the total distance and the path
     total_distance = 0
@@ -46,9 +41,5 @@ def dijkstra(matrix, reverse=False):
     # Add the destination city to the path and update total distance
     path.append(destination)
     total_distance += matrix[curr_city][destination]
-
-    # Reverse the path if required (for reverse order)
-    if reverse:
-        path.reverse()
 
     return path, total_distance
