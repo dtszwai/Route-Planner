@@ -10,6 +10,16 @@ GOOGLE_MAP_API_KEY = os.getenv("GOOGLE_MAP_API_KEY")
 
 
 def get_distance_matrix_by_google_maps(cities):
+    """
+    Get the distance matrix between cities using Google Maps Distance Matrix API.
+
+    Parameters:
+    - cities (list): A list of tuples, where each tuple represents a city with the format
+      ('City Name', 'State/Province', 'Country Code').
+
+    Returns:
+    list: A 2D list representing the distance matrix between cities (in kilometers).
+    """
     formatted_cities = "%7C".join(
         [
             f"{city.replace(' ', '%20')},{state.replace(' ', '%20')},{country}"
@@ -22,20 +32,29 @@ def get_distance_matrix_by_google_maps(cities):
     response = requests.get(url)
     response_json = response.json()
 
-    distance_matrix = [
-        [0 for _ in range(len(response_json["destination_addresses"]))]
-        for _ in range(len(response_json["origin_addresses"]))
-    ]
+    # Initialize the distance matrix with zeros
+    distance_matrix = [[0] * len(cities) for _ in range(len(cities))]
 
+    # Populate the distance matrix with values from the API response
     for i, row in enumerate(response_json["rows"]):
         for j, element in enumerate(row["elements"]):
             value = element["distance"]["value"]  # meters
-            distance_matrix[i][j] = value / 1000
+            distance_matrix[i][j] = value / 1000  # convert to km
 
     return distance_matrix
 
 
 def get_distance_matrix_by_coordinate(cities):
+    """
+    Get the distance matrix between cities using geographic coordinates.
+
+    Parameters:
+    - cities (list): A list of tuples, where each tuple represents a city with the format
+      ('City Name', 'State/Province', 'Country Code').
+
+    Returns:
+    list: A 2D list representing the distance matrix between cities (in kilometers).
+    """
     city_location_mapping = {}
 
     def get_location(city="", state="", country="", limit=1):
@@ -48,8 +67,10 @@ def get_distance_matrix_by_coordinate(cities):
     def get_distance_matrix(cities_location: dict[list]):
         cities = list(cities_location.keys())
 
+        # Initialize the distance matrix with zeros
         distance_matrix = [[0] * len(cities) for _ in range(len(cities))]
 
+        # Populate the distance matrix with geodesic distances
         for i in range(len(cities)):
             for j in range(len(cities)):
                 if i == j:
@@ -63,10 +84,12 @@ def get_distance_matrix_by_coordinate(cities):
                     )
         return distance_matrix
 
+    # Get geographic coordinates for each city
     for city in cities:
         location = get_location(*city)
         city_location_mapping[city] = location
 
+    # Calculate the distance matrix using geographic coordinates
     distance_matrix = get_distance_matrix(city_location_mapping)
 
     return distance_matrix

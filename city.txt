@@ -3,4 +3,4 @@ Oklahoma City,Oklahoma,US
 Kansas City,Missouri,US
 Riverton,Wyoming,US
 Denver,Colorado,US
-New York,New York, US
+New York,New York,US
