@@ -14,10 +14,10 @@ Install the required dependencies by running:
 pip3 install -r requirements.txt
 ```
 
-Create a .env file in the project directory and add the following lines, replacing <YOUR_GOOGLE_MAP_API_KEY> and <YOUR_OPEN_WEATHER_MAP_API_KEY> with your actual API keys.
+Create a .env file in the project directory and add the following lines, replacing <YOUR_GOOGLE_MAPS_API_KEY> and <YOUR_OPEN_WEATHER_MAP_API_KEY> with your actual API keys.
 
 ```txt
-GOOGLE_MAP_API_KEY="<YOUR_GOOGLE_MAP_API_KEY>"
+GOOGLE_MAPS_API_KEY="<YOUR_GOOGLE_MAPS_API_KEY>"
 OPEN_WEATHER_MAP_API_KEY="<YOUR_OPEN_WEATHER_MAP_API_KEY>"
 ```
 

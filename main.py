@@ -2,7 +2,7 @@ import os
 import sys
 import streamlit as st
 from dotenv import load_dotenv
-from algorithm import dijkstra
+from algorithm import knn
 from distance import (
     get_distance_matrix_by_google_maps,
     get_distance_matrix_by_coordinate,
@@ -15,7 +15,7 @@ COORDINATE = "coordinate"
 load_dotenv()
 
 # Get API key from .env
-GOOGLE_MAP_API_KEY = os.getenv("GOOGLE_MAP_API_KEY")
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
 
 def get_map_url(cities):
@@ -30,15 +30,23 @@ def get_map_url(cities):
     str: The Google Maps URL with directions based on the provided city information.
     """
     # Constructing the URL with origin, destination, and waypoints
-    formatted_cities = [f"{city[0]}, {city[1]}, {city[2]}" for city in cities]
-    waypoints = "|".join(formatted_cities[1:-1])
+    if GOOGLE_MAPS_API_KEY:
+        formatted_cities = [f"{city[0]}, {city[1]}, {city[2]}" for city in cities]
+        waypoints = "|".join(formatted_cities[1:-1])
 
-    url = f"https://www.google.com/maps/embed/v1/directions?key={GOOGLE_MAP_API_KEY}&origin={formatted_cities[0]}&destination={formatted_cities[-1]}&waypoints={waypoints}&mode=driving"
-
+        url = f"https://www.google.com/maps/embed/v1/directions?key={GOOGLE_MAPS_API_KEY}&origin={formatted_cities[0]}&destination= {formatted_cities[-1]}&waypoints={waypoints}&mode=driving"
+    else:
+        url = "https://www.google.com/maps/dir/"
+        for city in cities:
+            city_name = city[0].replace(" ", "+")
+            state = city[1].replace(" ", "+")
+            country = city[2].replace(" ", "+")
+            params = f"{city_name},{state},{country}/"
+            url += params
     return url
 
 
-def get_travel_route(cities, data_source=GOOGLE_MAPS, algorithm=dijkstra):
+def get_travel_route(cities, data_source=GOOGLE_MAPS, algorithm=knn):
     """
     Calculate the travel route using the specified algorithm and data source.
 
@@ -75,7 +83,7 @@ def visualizer(ordered_cities, distance, title):
     """
     # Format route information
     route = [f"`{city[0]}`" for city in ordered_cities]
-    formatted_route = " -> ".join(route)
+    formatted_route = " → ".join(route)
 
     # Get the Google Maps embed URL
     map_url = get_map_url(ordered_cities)
@@ -88,18 +96,20 @@ def visualizer(ordered_cities, distance, title):
     )
     st.write(f"Total Distance: {round(distance)} km")
 
-    embed_code = f"""
-        <iframe
-            width="100%"
-            height="480px"
-            style="border:0"
-            src="{map_url}"
-            allowfullscreen
-        >
-        </iframe>
-    """
-
-    st.components.v1.html(embed_code, height=500)
+    if GOOGLE_MAPS_API_KEY:
+        embed_code = f"""
+            <iframe
+                width="100%"
+                height="480px"
+                style="border:0"
+                src="{map_url}"
+                allowfullscreen
+            >
+            </iframe>
+        """
+        st.components.v1.html(embed_code, height=500)
+    else:
+        st.write(map_url)
 
 
 def parse_command_line(arguments):
@@ -169,8 +179,8 @@ def main():
     run_and_visualize_algorithm(
         cities=cities,
         data_source=data_source,
-        algorithm=dijkstra,
-        title="Dijkstra's Algorithm",
+        algorithm=knn,
+        title="Nearest Neighbour Algorithm",
     )
 
 

@@ -1,6 +1,6 @@
 import json
 
-from algorithm import dijkstra
+from algorithm import knn
 
 
 def get_map_url(cities):
@@ -20,7 +20,7 @@ def main():
     ]
     distance_matrix = json.load(open("./example/distance_matrix.json", "r"))
 
-    path_order, total_distance = dijkstra(distance_matrix)
+    path_order, total_distance = knn(distance_matrix)
     ordered_cities_info = [cities_info[i] for i in path_order]
 
     route = [city[0] for city in ordered_cities_info]

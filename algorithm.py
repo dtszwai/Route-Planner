@@ -1,6 +1,6 @@
-def dijkstra(matrix):
+def knn(matrix):
     """
-    Find the shortest path using Dijkstra's algorithm on a given distance matrix.
+    Find the shortest path using Nearest neighbour algorithm on a given distance matrix.
 
     Parameters:
     - matrix (list): A 2D list representing the distance matrix between cities.
@@ -25,7 +25,7 @@ def dijkstra(matrix):
     path = [start]
     curr_city = start
 
-    # Main loop of Dijkstra's algorithm
+    # Main loop of Nearest neighbour algorithm
     while remaining_cities:
         # Find the next city with the minimum distance
         next_city = min(remaining_cities, key=lambda x: matrix[curr_city][x])
